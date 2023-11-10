@@ -33,4 +33,9 @@ final class Movie extends Model
     {
         return $this->hasMany(Rating::class, 'movie_imdbID', 'imdbID');
     }
+
+    public function scopeSearch($query, $term)
+    {
+        return $query->where('imdbID', 'like', '%' . $term . '%');
+    }
 }

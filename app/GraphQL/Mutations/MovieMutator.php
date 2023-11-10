@@ -2,12 +2,10 @@
 
 namespace App\GraphQL\Mutations;
 
-use App\DTO\MovieDTO;
 use App\Http\Resources\MovieResource;
 use App\Models\Movie;
 use App\Services\MovieService;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final readonly class MovieMutator
 {
@@ -15,7 +13,7 @@ final readonly class MovieMutator
     {
     }
 
-    public function fetch($_, array $args)
+    public function fetch($_, array $args): AnonymousResourceCollection
     {
         $movies = $this->service->fetchMovies($args['search'], $args['type'], $args['page']);
 

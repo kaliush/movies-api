@@ -27,6 +27,13 @@ scalar Int
 "The `Boolean` scalar type represents `true` or `false`."
 scalar Boolean
 
+"""
+The `Float` scalar type represents signed double-precision fractional
+values as specified by
+[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). 
+"""
+scalar Float
+
 "Information about pagination using a fully featured paginator."
 type PaginatorInfo {
   "Number of items in the current page."

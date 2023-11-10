@@ -11,7 +11,9 @@ final class Movie extends Model
     use HasFactory;
 
     protected $primaryKey = 'imdbID';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 final class MovieService
 {
     protected string $apiKey;
+
     protected string $baseUrl;
 
     public function __construct()

@@ -39,3 +39,32 @@ type User {
     "When the account was last updated."
     updated_at: DateTime!
 }
+
+type Mutation {
+    fetchMovies(search: String!, type: MovieType!, page: Int!): [Movie!]! @field(resolver: "App\\GraphQL\\Mutations\\MovieMutator@fetch")
+}
+
+enum MovieType {
+    movie
+    series
+    episode
+}
+
+type Movie {
+    imdbID: ID!
+    type: String
+    released: String
+    year: Int
+    poster: String
+    genre: String
+    runtime: String
+    country: String
+    imdbRating: Float
+    imdbVotes: Int
+    ratings: [Rating]
+}
+
+type Rating {
+    source: String
+    value: String
+}

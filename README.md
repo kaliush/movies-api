@@ -67,7 +67,10 @@ The GraphQL API is set up with the following main endpoints:
 - `Mutation fetchMovies`: Fetch movie data from the OMDB API and store/update it in the database.
 - `Mutation updateMovie`: Update details of an existing movie.
 
-You can interact with the API using tools like GraphiQL (localhost/graphiql)
+You can interact with the API using tools like GraphiQL 
+```bash
+localhost/graphiql
+```
 
 ### Test Mutation Example
 
@@ -75,7 +78,7 @@ Use this mutation in GraphiQL to test fetching movies:
 
 ```graphql
 mutation {
-  fetchMovies(search: "Inception", type: series, page: 1) {
+  fetchMovies(search: "Inception", type: movie, page: 1) {
     imdbID
     type
     released

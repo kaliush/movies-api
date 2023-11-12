@@ -4,7 +4,7 @@ namespace App\DTO;
 
 use Carbon\Carbon;
 
-final class MovieDTO
+class MovieDTO
 {
     public function __construct(
         public string $imdbID,

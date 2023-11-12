@@ -19,12 +19,13 @@ type Query {
     ): [User!]! @paginate(defaultCount: 10)
 
     movies(
-        search: String
+        search: String @rules(apply: ["string", "min:1"])
         type: MovieType
-        year: Int
-        page: Int
+        year: Int @rules(apply: ["integer", "digits:4"])
+        page: Int @rules(apply: ["integer", "min:1"])
     ): [Movie!]! @field(resolver: "App\\GraphQL\\Queries\\MovieQuery@resolve")
 }
+
 
 "Account of a person who utilizes this application."
 type User {
@@ -48,7 +49,24 @@ type User {
 }
 
 type Mutation {
-    fetchMovies(search: String!, type: MovieType!, page: Int!): [Movie!]! @field(resolver: "App\\GraphQL\\Mutations\\MovieMutator@fetch")
+    fetchMovies(
+        search: String! @rules(apply: ["required", "string", "min:1"])
+        type: MovieType! @rules(apply: ["required", "in:movie,series,episode"])
+        page: Int! @rules(apply: ["required", "integer", "min:1"])
+    ): [Movie!]! @field(resolver: "App\\GraphQL\\Mutations\\MovieMutator@fetch")
+
+    updateMovie(
+        imdbID: ID! @rules(apply: ["required", "exists:movies,imdbID"])
+        type: MovieType @rules(apply: ["nullable"])
+        released: String @rules(apply: ["nullable", "date_format:Y-m-d"])
+        year: Int @rules(apply: ["nullable", "integer", "digits:4"])
+        poster: String @rules(apply: ["nullable", "url"])
+        genre: String @rules(apply: ["nullable", "string"])
+        runtime: String @rules(apply: ["nullable", "string"])
+        country: String @rules(apply: ["nullable", "string"])
+        imdbRating: Float @rules(apply: ["nullable", "numeric", "between:0,10"])
+        imdbVotes: Int @rules(apply: ["nullable", "integer"])
+    ): Movie @field(resolver: "App\\GraphQL\\Mutations\\MovieMutator@update")
 }
 
 enum MovieType {

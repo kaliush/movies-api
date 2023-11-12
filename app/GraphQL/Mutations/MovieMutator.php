@@ -26,7 +26,7 @@ final readonly class MovieMutator
 
         foreach ($movies as $movie) {
             try {
-                $movieDto = $this->omdbService->fetchMovieDetails($movie['imdbID']);
+                $movieDto = $this->omdbService->fetchMovieDetails($movie->imdbID);
             } catch (OmdbApiException $e) {
                 Log::error($e->getMessage());
             }

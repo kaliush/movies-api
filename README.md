@@ -1,4 +1,4 @@
-# Laravel Movie GraphQL API
+# Movie GraphQL API
 
 This Laravel 10 project implements a GraphQL API for managing movies. The API allows fetching movie data from the OMDB API and storing it in the application's database, as well as updating existing movie records.
 

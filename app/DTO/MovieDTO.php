@@ -64,15 +64,14 @@ class MovieDTO
     private static function formatDate(?string $date): ?string
     {
         if ($date === 'N/A' || $date === null) {
-            return "Not released";
+            return null; // Return null for not released movies
         }
 
         try {
             return Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-
-            return "Unknown release date";
+            return null; // Return null if the date format is incorrect
         }
     }
 

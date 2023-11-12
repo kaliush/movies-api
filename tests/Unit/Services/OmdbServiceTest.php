@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\DTO\MovieDTO;
 use App\Services\OmdbService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -30,9 +31,9 @@ class OmdbServiceTest extends TestCase
 
         $movies = $this->omdbService->fetchMovies('Inception', 'movie', 1);
 
-        $this->assertIsArray($movies);
+        $this->assertInstanceOf(Collection::class, $movies);
         $this->assertCount(1, $movies);
-        $this->assertEquals('2010', $movies[0]['Year']);
+        $this->assertEquals('2010', $movies->first()->year);
     }
 
     /** @test */

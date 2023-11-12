@@ -3,41 +3,69 @@
 namespace App\Services;
 
 use App\DTO\MovieDTO;
+use App\Exceptions\MovieNotFoundException;
+use App\Exceptions\TransactionFailedException;
 use App\Models\Movie;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
-class MovieService
+final class MovieService
 {
+    /**
+     * @throws TransactionFailedException
+     */
     public function storeMovie(MovieDTO $dto): void
     {
-        DB::transaction(function () use ($dto) {
-            $movieData = $dto->getMovieData();
-            $movie = Movie::updateOrCreate(['imdbID' => $movieData['imdbID']], $movieData);
-            $this->updateRatings($movie, $dto->ratings);
-        });
+        try {
+            DB::transaction(function () use ($dto) {
+                $movieData = $dto->getMovieData();
+                $movie = Movie::updateOrCreate(['imdbID' => $movieData['imdbID']], $movieData);
+
+                $this->syncRatings($movie, $dto->ratings);
+            });
+        } catch (\Exception $e) {
+            throw new TransactionFailedException('Failed to store movie', 0, $e);
+        }
     }
 
-    protected function updateRatings(Movie $movie, array $newRatings): void
+    private function syncRatings(Movie $movie, array $newRatings): void
     {
-        $currentRatings = $movie->ratings->keyBy('source');
+        $this->updateOrCreateRatings($movie, $newRatings);
+        $this->deleteOldRatings($movie, $newRatings);
+    }
 
+    private function updateOrCreateRatings(Movie $movie, array $newRatings): void
+    {
         foreach ($newRatings as $rating) {
-            $currentRating = $currentRatings->pull($rating['source']);
-            if ($currentRating) {
-                $currentRating->update(['value' => $rating['value']]);
-            } else {
-                $movie->ratings()->create($rating);
-            }
-        }
-
-        foreach ($currentRatings as $oldRating) {
-            $oldRating->delete();
+            $movie->ratings()->updateOrCreate(
+                ['source' => $rating['source']],
+                ['value' => $rating['value']]
+            );
         }
     }
 
+    private function deleteOldRatings(Movie $movie, array $newRatings): void
+    {
+        $existingSources = $movie->ratings()->pluck('source');
+        $newSources = collect($newRatings)->pluck('source');
+        $sourcesToDelete = $existingSources->diff($newSources);
+
+        if ($sourcesToDelete->isNotEmpty()) {
+            $movie->ratings()->whereIn('source', $sourcesToDelete)->delete();
+        }
+    }
+
+    /**
+     * @throws MovieNotFoundException
+     */
     public function updateMovie(string $imdbID, array $attributes): Movie
     {
-        $movie = Movie::findOrFail($imdbID);
+        try {
+            $movie = Movie::findOrFail($imdbID);
+        } catch (ModelNotFoundException $e) {
+            throw new MovieNotFoundException("Movie with ID $imdbID not found", 0, $e);
+        }
+
         $movie->update($attributes);
         return $movie;
     }

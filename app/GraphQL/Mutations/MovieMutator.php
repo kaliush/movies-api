@@ -2,11 +2,13 @@
 
 namespace App\GraphQL\Mutations;
 
+use App\Exceptions\OmdbApiException;
 use App\Http\Resources\MovieResource;
 use App\Models\Movie;
 use App\Services\MovieService;
 use App\Services\OmdbService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 
 final readonly class MovieMutator
 {
@@ -16,10 +18,18 @@ final readonly class MovieMutator
 
     public function fetch($_, array $args): AnonymousResourceCollection
     {
-        $movies = $this->omdbService->fetchMovies($args['search'], $args['type'], $args['page']);
+        try {
+            $movies = $this->omdbService->fetchMovies($args['search'], $args['type'], $args['page']);
+        } catch (OmdbApiException $e) {
+            Log::error($e->getMessage());
+        }
 
         foreach ($movies as $movie) {
-            $movieDto = $this->omdbService->fetchMovieDetails($movie['imdbID']);
+            try {
+                $movieDto = $this->omdbService->fetchMovieDetails($movie['imdbID']);
+            } catch (OmdbApiException $e) {
+                Log::error($e->getMessage());
+            }
             $this->movieService->storeMovie($movieDto);
         }
 

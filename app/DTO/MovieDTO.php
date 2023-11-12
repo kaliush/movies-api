@@ -3,21 +3,22 @@
 namespace App\DTO;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class MovieDTO
 {
     public function __construct(
-        public string $imdbID,
+        public string  $imdbID,
         public ?string $type,
         public ?string $released,
-        public ?int $year,
+        public ?int    $year,
         public ?string $runtime,
         public ?string $genre,
         public ?string $country,
         public ?string $poster,
-        public ?float $imdbRating,
-        public ?int $imdbVotes,
-        public array $ratings
+        public ?float  $imdbRating,
+        public ?int    $imdbVotes,
+        public array   $ratings
     ) {
         $this->ratings = $this->transformRatings($ratings);
     }
@@ -28,7 +29,7 @@ class MovieDTO
             imdbID: $data['imdbID'] ?? '',
             type: $data['Type'] ?? null,
             released: self::formatDate($data['Released'] ?? null),
-            year: isset($data['Year']) ? (int) $data['Year'] : null,
+            year: isset($data['Year']) ? (int)$data['Year'] : null,
             runtime: $data['Runtime'] ?? null,
             genre: $data['Genre'] ?? null,
             country: $data['Country'] ?? null,
@@ -52,9 +53,9 @@ class MovieDTO
     private static function parseImdbVotes($imdbVotes): ?int
     {
         if (is_numeric($imdbVotes)) {
-            return (int) $imdbVotes;
+            return (int)$imdbVotes;
         } elseif (is_string($imdbVotes)) {
-            return (int) str_replace(',', '', $imdbVotes);
+            return (int)str_replace(',', '', $imdbVotes);
         }
 
         return null;
@@ -62,15 +63,17 @@ class MovieDTO
 
     private static function formatDate(?string $date): ?string
     {
-        if ($date && $date !== 'N/A') {
-            try {
-                return Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
-            } catch (\Exception $e) {
-                return null;
-            }
+        if ($date === 'N/A' || $date === null) {
+            return "Not released";
         }
 
-        return null;
+        try {
+            return Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+
+            return "Unknown release date";
+        }
     }
 
     public function getMovieData(): array

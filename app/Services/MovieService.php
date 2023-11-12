@@ -12,16 +12,19 @@ use Illuminate\Support\Facades\DB;
 final class MovieService
 {
     /**
+     * Stores or updates a movie and its ratings in the database.
+     *
      * @throws TransactionFailedException
+     * @return Movie The stored or updated movie instance.
      */
-    public function storeMovie(MovieDTO $dto): void
+    public function storeMovie(MovieDTO $dto): Movie
     {
         try {
-            DB::transaction(function () use ($dto) {
+            return DB::transaction(function () use ($dto) {
                 $movieData = $dto->getMovieData();
                 $movie = Movie::updateOrCreate(['imdbID' => $movieData['imdbID']], $movieData);
-
                 $this->syncRatings($movie, $dto->ratings);
+                return $movie;
             });
         } catch (\Exception $e) {
             throw new TransactionFailedException('Failed to store movie', 0, $e);

@@ -18,22 +18,26 @@ final readonly class MovieMutator
 
     public function fetch($_, array $args): AnonymousResourceCollection
     {
+        $fetchedMovies = [];
+
         try {
             $movies = $this->omdbService->fetchMovies($args['search'], $args['type'], $args['page']);
+
+            foreach ($movies as $movie) {
+                try {
+                    $movieDto = $this->omdbService->fetchMovieDetails($movie->imdbID);
+                    $storedMovie = $this->movieService->storeMovie($movieDto);
+                    $fetchedMovies[] = $storedMovie;
+                } catch (OmdbApiException $e) {
+                    Log::error($e->getMessage());
+                }
+            }
         } catch (OmdbApiException $e) {
             Log::error($e->getMessage());
+            return MovieResource::collection(collect());
         }
 
-        foreach ($movies as $movie) {
-            try {
-                $movieDto = $this->omdbService->fetchMovieDetails($movie->imdbID);
-            } catch (OmdbApiException $e) {
-                Log::error($e->getMessage());
-            }
-            $this->movieService->storeMovie($movieDto);
-        }
-
-        return MovieResource::collection(Movie::all());
+        return MovieResource::collection(collect($fetchedMovies));
     }
 
     public function update($_, array $args): Movie
